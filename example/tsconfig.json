@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "expo-polar-sdk": ["../src/index"],
+      "expo-polar-sdk/*": ["../src/*"]
+    }
+  }
+}

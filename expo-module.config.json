@@ -1,0 +1,9 @@
+{
+  "platforms": ["ios", "android"],
+  "ios": {
+    "modules": ["ExpoPolarSDKModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.polarsdk.ExpoPolarSDKModule"]
+  }
+}
