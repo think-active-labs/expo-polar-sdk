@@ -1,6 +1,11 @@
 import ExpoModulesCore
+import CoreBluetooth
+import PolarBleSdk
+import RxSwift
 
-public class ExpoPolarSDKModule: Module {
+public class ExpoPolarSDKModule: Module, PolarBleApiObserver, PolarBleApiPowerStateObserver, PolarBleApiDeviceInfoObserver, PolarBleApiDeviceFeaturesObserver, PolarBleApiDeviceHrObserver {
+    var api: PolarBleApi! = PolarBleApiDefaultImpl.polarImplementation(DispatchQueue.main, features: Features.allFeatures.rawValue)
+    
   // Each module class must implement the definition function. The definition consists of components
   // that describes the module's functionality and behavior.
   // See https://docs.expo.dev/modules/module-api for more details about available components.
@@ -15,91 +20,12 @@ public class ExpoPolarSDKModule: Module {
 
     // Defines a JavaScript synchronous function that runs the native code on the JavaScript thread.
     Function("initialise") {
-      api.setApiCallback(object : PolarBleApiCallback() {
-              override fun blePowerStateChanged(powered: Boolean) {
-                  self.sendEvent("onBLEPowerStateChanged", [
-                  "powered" to powered
-                ])
-              }
-
-              override fun deviceConnected(polarDeviceInfo: PolarDeviceInfo) {
-                  self.sendEvent("onDeviceConnected", [
-                  "deviceId" to polarDeviceInfo.deviceId,
-                  "address" to polarDeviceInfo.address,
-                  "name" to polarDeviceInfo.name,
-                  "isConnectable" to polarDeviceInfo.isConnectable,
-                  "rssi" to polarDeviceInfo.rssi,
-                ])
-              }
-
-              override fun deviceConnecting(polarDeviceInfo: PolarDeviceInfo) {
-                  self.sendEvent("onDeviceConnecting", mapOf(
-                  "deviceId" to polarDeviceInfo.deviceId,
-                  "address" to polarDeviceInfo.address,
-                  "name" to polarDeviceInfo.name,
-                  "isConnectable" to polarDeviceInfo.isConnectable,
-                  "rssi" to polarDeviceInfo.rssi,
-                ))
-              }
-
-              override fun deviceDisconnected(polarDeviceInfo: PolarDeviceInfo) {
-                  self.sendEvent("onDeviceDisconnected", mapOf(
-                  "deviceId" to polarDeviceInfo.deviceId,
-                  "address" to polarDeviceInfo.address,
-                  "name" to polarDeviceInfo.name,
-                  "isConnectable" to polarDeviceInfo.isConnectable,
-                  "rssi" to polarDeviceInfo.rssi,
-                ))
-              }
-
-              override fun disInformationReceived(identifier: String, uuid: UUID, value: String) {
-                  self.sendEvent("onDisInformationReceived", mapOf(
-                  "identifier" to identifier,
-                  "uuid" to uuid,
-                  "value" to value,
-                ))
-              }
-
-              override fun streamingFeaturesReady(identifier: String, features: Set<PolarBleApi.DeviceStreamingFeature>) {
-                  self.sendEvent("onStreamingFeaturesReady", mapOf(
-                  "identifier" to identifier,
-                  "features" to features.map { it.name }
-                ))
-              }
-
-              override fun hrFeatureReady(identifier: String) {
-                  self.sendEvent("onHRFeatureReady", mapOf(
-                  "identifier" to identifier
-                ))
-              }
-
-              override fun batteryLevelReceived(identifier: String, level: Int) {
-                  self.sendEvent("onBatteryLevelReceived", mapOf(
-                  "identifier" to identifier,
-                  "level" to level
-                ))
-              }
-
-              override fun hrNotificationReceived(identifier: String, data: PolarHrData) {
-                  self.sendEvent("onHRValueReceived", mapOf(
-                  "identifier" to identifier,
-                  "data" to mapOf(
-                    "hr" to data.hr,
-                    "rrsMs" to data.rrsMs,
-                    "rrs" to data.rrs,
-                    "contactStatus" to data.contactStatus,
-                    "contactStatusSupported" to data.contactStatusSupported
-                  )
-                ))
-              }
-
-              override fun polarFtpFeatureReady(identifier: String) {
-                  self.sendEvent("onFTPFeatureReady", mapOf(
-                  "identifier" to identifier,
-                ))
-              }
-            })
-          }
+        api.observer = self
+        api.deviceHrObserver = self
+        api.powerStateObserver = self
+        api.deviceFeaturesObserver = self
+        api.deviceInfoObserver = self
+    }
 
     // Defines a JavaScript function that always returns a Promise and whose native code
     // is by default dispatched on the different thread than the JavaScript runtime runs on.
@@ -110,16 +36,106 @@ public class ExpoPolarSDKModule: Module {
       ])
     }
       
-    Function("connectToDevice") { (deviceId: String) in
-      api.connectToDevice(deviceId)
+    Function("connectToDevice") { (deviceId: String) throws in
+      try api.connectToDevice(deviceId)
     }
 
     Function("foregroundEntered") {
-      api.foregroundEntered()
+      // not relevant for iOS
     }
 
     Function("shutdown") {
-      api.shutDown()
+        api.cleanup()
+        api = nil
     }
+  }
+    
+  public func deviceConnecting(_ polarDeviceInfo: PolarDeviceInfo) {
+      self.sendEvent("onDeviceConnecting", [
+        "deviceId": polarDeviceInfo.deviceId,
+        "address": polarDeviceInfo.address,
+        "name": polarDeviceInfo.name,
+        "isConnectable": polarDeviceInfo.connectable,
+        "rssi": polarDeviceInfo.rssi,
+    ])
+  }
+        
+  public func deviceConnected(_ polarDeviceInfo: PolarDeviceInfo) {
+      self.sendEvent("onDeviceConnected", [
+        "deviceId": polarDeviceInfo.deviceId,
+        "address": polarDeviceInfo.address,
+        "name": polarDeviceInfo.name,
+        "isConnectable": polarDeviceInfo.connectable,
+        "rssi": polarDeviceInfo.rssi,
+    ])
+  }
+        
+  public func deviceDisconnected(_ polarDeviceInfo: PolarDeviceInfo) {
+      self.sendEvent("onDeviceDisconnected", [
+        "deviceId": polarDeviceInfo.deviceId,
+        "address": polarDeviceInfo.address,
+        "name": polarDeviceInfo.name,
+        "isConnectable": polarDeviceInfo.connectable,
+        "rssi": polarDeviceInfo.rssi,
+    ])
+  }
+        
+  public func batteryLevelReceived(_ identifier: String, batteryLevel: UInt) {
+      self.sendEvent("onBatteryLevelReceived", [
+        "identifier": identifier,
+        "level": batteryLevel
+    ])
+  }
+        
+  public func disInformationReceived(_ identifier: String, uuid: CBUUID, value: String) {
+      self.sendEvent("onDisInformationReceived", [
+        "identifier": identifier,
+        "uuid": uuid.uuidString,
+        "value": value,
+    ])
+  }
+        
+  public func hrValueReceived(_ identifier: String, data: PolarHrData) {
+      self.sendEvent("onHRValueReceived", [
+        "identifier": identifier,
+        "data": [
+            "hr": data.hr,
+            "rrsMs": data.rrsMs,
+            "rrs": data.rrs,
+            "contactStatus": data.contact,
+            "contactStatusSupported": data.contactSupported
+      ]
+    ])
+  }
+            
+  public func hrFeatureReady(_ identifier: String) {
+      self.sendEvent("onHRFeatureReady", [
+        "identifier": identifier
+    ])
+  }
+        
+  public func ftpFeatureReady(_ identifier: String) {
+      self.sendEvent("onFTPFeatureReady", [
+        "identifier": identifier,
+    ])
+  }
+        
+  public func streamingFeaturesReady(_ identifier: String, streamingFeatures: Set<DeviceStreamingFeature>) {
+      self.sendEvent("onStreamingFeaturesReady", [
+        "identifier": identifier,
+        "features": streamingFeatures.map { String(describing: $0) }
+    ])
+  }
+    
+  public func blePowerOn() {
+      self.sendEvent("onBLEPowerStateChanged", [
+        "powered": true
+    ])
+  }
+        
+  public func blePowerOff() {
+      self.sendEvent("onBLEPowerStateChanged", [
+        "powered": false
+    ])
   }
 }

@@ -18,6 +18,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - ExpoPolarSDK (0.1.0):
     - ExpoModulesCore
+    - PolarBleSdk (~> 3.3)
   - FBLazyVector (0.70.5)
   - FBReactNativeSpec (0.70.5):
     - RCT-Folly (= 2021.07.22.00)
@@ -28,6 +29,9 @@ PODS:
     - ReactCommon/turbomodule/core (= 0.70.5)
   - fmt (6.2.1)
   - glog (0.3.5)
+  - PolarBleSdk (3.3.6):
+    - RxSwift (~> 6.5.0)
+    - SwiftProtobuf (~> 1.0)
   - RCT-Folly (2021.07.22.00):
     - boost
     - DoubleConversion
@@ -303,6 +307,8 @@ PODS:
     - React-jsi (= 0.70.5)
     - React-logger (= 0.70.5)
     - React-perflogger (= 0.70.5)
+  - RxSwift (6.5.0)
+  - SwiftProtobuf (1.20.3)
   - Yoga (1.14.0)
 
 DEPENDENCIES:
@@ -351,6 +357,9 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - fmt
+    - PolarBleSdk
+    - RxSwift
+    - SwiftProtobuf
 
 EXTERNAL SOURCES:
   boost:
@@ -444,11 +453,12 @@ SPEC CHECKSUMS:
   Expo: b9fa98bf260992312ee3c424400819fb9beadafe
   ExpoKeepAwake: 69b59d0a8d2b24de9f82759c39b3821fec030318
   ExpoModulesCore: 485dff3a59b036a33b6050c0a5aea3cf1037fdd1
-  ExpoPolarSDK: 2146b690e6d7e9f2239c75f2457d3b58d4ae5590
+  ExpoPolarSDK: 7548dc1560e2e625017946bb317cf1ac94075f25
   FBLazyVector: affa4ba1bfdaac110a789192f4d452b053a86624
   FBReactNativeSpec: fe8b5f1429cfe83a8d72dc8ed61dc7704cac8745
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
+  PolarBleSdk: 9a7ff25ce80d2fae014e013977a14424df20c4bd
   RCT-Folly: 0080d0a6ebf2577475bda044aa59e2ca1f909cda
   RCTRequired: 21229f84411088e5d8538f21212de49e46cc83e2
   RCTTypeSafety: 62eed57a32924b09edaaf170a548d1fc96223086
@@ -475,6 +485,8 @@ SPEC CHECKSUMS:
   React-RCTVibration: 8e5c8c5d17af641f306d7380d8d0fe9b3c142c48
   React-runtimeexecutor: 7401c4a40f8728fd89df4a56104541b760876117
   ReactCommon: c9246996e73bf75a2c6c3ff15f1e16707cdc2da9
+  RxSwift: 5710a9e6b17f3c3d6e40d6e559b9fa1e813b2ef8
+  SwiftProtobuf: b02b5075dcf60c9f5f403000b3b0c202a11b6ae1
   Yoga: eca980a5771bf114c41a754098cd85e6e0d90ed7
 
 PODFILE CHECKSUM: a609df0037d3a8faaa01695a68f01fba158d5b66
