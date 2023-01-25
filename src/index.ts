@@ -8,8 +8,10 @@ import {
 // and on native platforms to ExpoPolarSDK.ts
 import {
   BatteryLevelReceivedEventPayload,
+  BLEPowerStateChangedEventPayload,
   DeviceDisInformationReceivedEventPayload,
   HRValueReceivedEventPayload,
+  LogReceivedEventPayload,
   PolarDeviceInfoEventPayload,
   StreamingFeaturesReadyEventPayload,
 } from "./ExpoPolarSDK.types";
@@ -36,9 +38,12 @@ const emitter = new EventEmitter(
 );
 
 export function addBLEPowerStateChangedListener(
-  listener: (powered: boolean) => void
+  listener: (event: BLEPowerStateChangedEventPayload) => void
 ): Subscription {
-  return emitter.addListener<boolean>("onBLEPowerStateChanged", listener);
+  return emitter.addListener<BLEPowerStateChangedEventPayload>(
+    "onBLEPowerStateChanged",
+    listener
+  );
 }
 
 export function addDeviceConnectingListener(
@@ -107,7 +112,7 @@ export function addStreamingFeaturesReadyListener(
   );
 }
 
-export function addBatteryLevelReceived(
+export function addBatteryLevelReceivedListener(
   listener: (event: BatteryLevelReceivedEventPayload) => void
 ): Subscription {
   return emitter.addListener<BatteryLevelReceivedEventPayload>(
@@ -116,10 +121,21 @@ export function addBatteryLevelReceived(
   );
 }
 
+export function addLogReceivedListener(
+  listener: (event: LogReceivedEventPayload) => void
+): Subscription {
+  return emitter.addListener<LogReceivedEventPayload>(
+    "onLogReceived",
+    listener
+  );
+}
+
 export {
+  BLEPowerStateChangedEventPayload,
   BatteryLevelReceivedEventPayload,
   DeviceDisInformationReceivedEventPayload,
   HRValueReceivedEventPayload,
   PolarDeviceInfoEventPayload,
   StreamingFeaturesReadyEventPayload,
+  LogReceivedEventPayload,
 };

@@ -1,40 +1,56 @@
 import * as ExpoPolarSDK from "expo-polar-sdk";
-import { Button, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Button, ScrollView, StyleSheet, Text, View } from "react-native";
 
-const deviceId = "XXXX";
+const deviceId = "B382092D";
 
 export default function App() {
-  let logs = "";
+  const [logs, setLogs] = useState<string>("APPLICATION INITIALISED...\n");
 
-  ExpoPolarSDK.addBLEPowerStateChangedListener((event) => {
-    logs += `BLE POWER STATE: ${event}\n`;
-  });
+  useEffect(() => {
+    ExpoPolarSDK.addLogReceivedListener((event) => {
+      setLogs((l) => (l += `🗒 POLAR LOG RECEIVED: ${event.message}\n`));
+    });
 
-  ExpoPolarSDK.addDeviceConnectingListener((event) => {
-    logs += `DEVICE CONNECTING: ${event}\n`;
-  });
+    ExpoPolarSDK.addBLEPowerStateChangedListener((event) => {
+      setLogs((l) => (l += `BLE POWER STATE: ${event.powered}\n`));
+    });
 
-  ExpoPolarSDK.addDeviceConnectedListener((event) => {
-    logs += `DEVICE CONNECTED: ${event}\n`;
-  });
+    ExpoPolarSDK.addDeviceConnectingListener((event) => {
+      setLogs((l) => (l += `🟡 DEVICE CONNECTING: ${JSON.stringify(event)}\n`));
+    });
 
-  ExpoPolarSDK.addDeviceDisconnectedListener((event) => {
-    logs += `DEVICE DISCONNECTED: ${event}\n`;
-  });
+    ExpoPolarSDK.addDeviceConnectedListener((event) => {
+      setLogs((l) => (l += `🟢 DEVICE CONNECTED: ${JSON.stringify(event)}\n`));
+    });
 
-  ExpoPolarSDK.addDisInformationReceivedListener((event) => {
-    logs += `DEVICE DISINFORMATION RECEIVED: ${event}\n`;
-  });
+    ExpoPolarSDK.addDeviceDisconnectedListener((event) => {
+      setLogs(
+        (l) => (l += `🔴 DEVICE DISCONNECTED: ${JSON.stringify(event)}\n`)
+      );
+    });
 
-  ExpoPolarSDK.addBatteryLevelReceived((event) => {
-    logs += `BATTERY LEVEL RECEIVED: ${event}\n`;
-  });
+    ExpoPolarSDK.addDisInformationReceivedListener((event) => {
+      setLogs(
+        (l) =>
+          (l += `❗ DEVICE DISINFORMATION RECEIVED: ${JSON.stringify(event)}\n`)
+      );
+    });
 
-  ExpoPolarSDK.initialize();
+    ExpoPolarSDK.addBatteryLevelReceivedListener((event) => {
+      setLogs(
+        (l) => (l += `🔋 BATTERY LEVEL RECEIVED: ${JSON.stringify(event)}\n`)
+      );
+    });
+
+    ExpoPolarSDK.initialize();
+  }, []);
 
   return (
     <View style={styles.container}>
-      <Text>{logs}</Text>
+      <ScrollView>
+        <Text>{logs}</Text>
+      </ScrollView>
       <Button
         title="Connect"
         onPress={() => ExpoPolarSDK.connectToDevice(deviceId)}
@@ -45,6 +61,8 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: {
+    marginTop: 80,
+    marginBottom: 20,
     flex: 1,
     backgroundColor: "#fff",
     alignItems: "center",

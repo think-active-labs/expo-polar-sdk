@@ -47,3 +47,7 @@ export type BatteryLevelReceivedEventPayload = {
   identifier: string;
   level: number;
 };
+
+export type LogReceivedEventPayload = {
+  message: string;
+};
